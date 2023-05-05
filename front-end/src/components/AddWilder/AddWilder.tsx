@@ -1,79 +1,76 @@
-import { useState } from "react"
 import axios from "axios"
 import styles from "./AddWilder.module.css"
 import { useWilders } from "../../context/WildersProvider"
-import { FormEvent } from "react"
+import { useForm } from "react-hook-form"
+
+type FormData = {
+   name: string
+   city: string
+   skill: string
+   grade: number
+}
 
 const AddWilder = () => {
    const { fetchData } = useWilders()
-   const [name, setName] = useState("")
-   const [city, setCity] = useState("")
-   const [skill, setSkill] = useState("")
-   const [grade, setGrade] = useState("")
 
-   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
+   const {
+      register,
+      handleSubmit,
+      formState: { errors },
+   } = useForm<FormData>()
+
+   const onSubmit = handleSubmit(async (data) => {
       try {
          let res = await axios.post("http://localhost:5001/api/wilder", {
-            name,
-            city,
+            name: data.name,
+            city: data.city,
          })
-         await axios.post("http://localhost:5001/api/skill", { name: skill })
+         await axios.post("http://localhost:5001/api/skill", {
+            name: data.skill,
+         })
          await axios.post("http://localhost:5001/api/grade", {
             wilder: res.data.name,
-            grade,
-            skill,
+            grade: data.grade,
+            skill: data.skill,
          })
          fetchData()
-         reset()
       } catch (error) {
          console.log(error)
       }
-   }
-
-   const reset = () => {
-      setName("")
-      setCity("")
-      setSkill("")
-      setGrade("")
-   }
+   })
 
    return (
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
          <label>Name</label>
          <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            {...register("name", { required: true })}
             placeholder="Charles..."
-            required
          />
+         {errors.name && <p>Name is required</p>}
          <label>City</label>
          <input
             type="text"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+            {...register("city", { required: true })}
             placeholder="Londres..."
-            required
          />
+         {errors.city && <p>City is required</p>}
          <label>Skill</label>
          <input
             type="text"
-            value={skill}
-            onChange={(e) => setSkill(e.target.value)}
+            {...register("skill", { required: true })}
             placeholder="Ruby..."
-            required
-         />
+         />{" "}
+         {errors.skill && <p>Skill is required</p>}
          <label>Grade</label>
          <input
             type="number"
             min="0"
             max="10"
-            value={grade}
-            onChange={(e) => setGrade(e.target.value)}
+            {...register("grade", { required: true })}
             className={styles.gradeinput}
-            required
          />
+         {errors.grade && <p>Grade is required</p>}
          <button>Add Wilder</button>
       </form>
    )

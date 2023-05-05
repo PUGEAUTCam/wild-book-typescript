@@ -5,12 +5,12 @@ import axios from "axios"
 import { useWilders } from "../../context/WildersProvider"
 import { Wilder as WilderInterface } from "../interface/interface"
 import React from "react"
+import ModalUpdateWilder from "../ModalUpdateWilder/ModalUpdateWilder"
 
 const Wilder: React.FC<WilderInterface> = ({ name, city, id, skills }) => {
    const { fetchData } = useWilders()
 
    const handleDelete = async (id: number) => {
-      console.log(id)
       try {
          await axios.delete(`http://localhost:5001/api/wilder/${id}`)
          fetchData()
@@ -37,6 +37,7 @@ const Wilder: React.FC<WilderInterface> = ({ name, city, id, skills }) => {
             ))}
          </ul>
          <div className={styles.button}>
+            <ModalUpdateWilder id={id} />
             <button onClick={() => handleDelete(id)}>Supprimer</button>
          </div>
       </article>
