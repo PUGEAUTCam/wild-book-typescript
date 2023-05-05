@@ -2,14 +2,17 @@ import axios from "axios"
 import React, { useState } from "react"
 import Modal from "react-modal"
 import { useWilders } from "../../context/WildersProvider"
+import { useForm } from "react-hook-form"
 
 interface Props {
    id: number
 }
+type FormData = {
+   name: string
+}
 
 const ModalUpdateWilder: React.FC<Props> = ({ id }) => {
-   const [modalIsOpen, setIsOpen] = React.useState(false)
-   const [newName, setNewName] = useState("")
+   const [modalIsOpen, setIsOpen] = useState(false)
    const { fetchData } = useWilders()
 
    function openModal() {
@@ -19,20 +22,24 @@ const ModalUpdateWilder: React.FC<Props> = ({ id }) => {
       setIsOpen(false)
    }
 
-   const handleSubmit = async () => {
-      console.log("ICI")
+   const {
+      register,
+      handleSubmit,
+      formState: { errors },
+   } = useForm<FormData>()
+
+   const onSubmit = handleSubmit(async (data) => {
       try {
          await axios.put("http://localhost:5001/api/wilder", {
-            newData: { name: newName },
+            newData: { name: data.name },
             id: id,
          })
          fetchData()
-         setNewName("")
          setIsOpen(false)
       } catch (error) {
          console.log(error)
       }
-   }
+   })
 
    return (
       <div>
@@ -41,19 +48,17 @@ const ModalUpdateWilder: React.FC<Props> = ({ id }) => {
             isOpen={modalIsOpen}
             onRequestClose={closeModal}
             style={customStyles}
-            contentLabel="Example Modal"
          >
             <div>Modifie ton nom jeune Wilder !</div>
-            <form>
+            <form onSubmit={onSubmit}>
                <input
                   type="text"
-                  placeholder="Yoda..."
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Gin Tonic..."
+                  {...register("name", { required: true })}
                />
+               {errors.name && <p>Name is required</p>}
+               <button>Confirmer</button>
             </form>
-            <button onClick={handleSubmit}>Confirmer</button>
-            <button onClick={closeModal}>Annuler</button>
          </Modal>
       </div>
    )
